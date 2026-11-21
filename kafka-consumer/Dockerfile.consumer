@@ -1,0 +1,19 @@
+FROM spark:4.0.1-python3
+
+USER root
+
+COPY requirements-docker.txt /tmp/requirements.txt
+
+RUN python3 -m pip install \
+    --no-cache-dir \
+    --disable-pip-version-check \
+    --target /opt/chinook-python \
+    -r /tmp/requirements.txt
+
+ENV PYTHONPATH=/opt/chinook-python
+
+USER 185
+
+WORKDIR /app
+
+ENTRYPOINT ["python3"]

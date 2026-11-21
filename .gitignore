@@ -1,0 +1,46 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Airflow runtime
+airflow/logs/
+airflow/config/
+airflow/plugins/__pycache__/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+*.bak_*
+*.backup
+
+# Spark dependencies and runtime
+spark/jars/*.jar
+spark-warehouse/
+metastore_db/
+derby.log
+
+# Local databases and backups
+*.db
+*.sqlite
+*.dump
+*.sql.gz
+
+# Credentials and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+
+# OS
+.DS_Store
+Thumbs.db

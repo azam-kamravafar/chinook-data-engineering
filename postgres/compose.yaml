@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: chinook-postgres
+    hostname: chinook-postgres
+
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: chinook_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Password is required}
+      POSTGRES_DB: chinook_staging
+
+    ports:
+      - "127.0.0.1:15432:5432"
+
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+    networks:
+      - chinook-net
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U chinook_user -d chinook_staging
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:
+
+networks:
+  chinook-net:
+    external: true

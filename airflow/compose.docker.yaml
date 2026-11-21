@@ -1,0 +1,9 @@
+services:
+  airflow-scheduler:
+    group_add:
+      - "${DOCKER_GID:?DOCKER_GID is required}"
+
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
