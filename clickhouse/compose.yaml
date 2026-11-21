@@ -1,0 +1,30 @@
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:26.8.36.3
+    container_name: chinook-clickhouse
+    restart: unless-stopped
+
+    environment:
+      CLICKHOUSE_DB: ChinookDW
+      CLICKHOUSE_USER: ${CH_USER:?CH_USER is required}
+      CLICKHOUSE_PASSWORD: ${CH_PASSWORD:?CH_PASSWORD is required}
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
+
+    ports:
+      - "127.0.0.1:18123:8123"
+      - "127.0.0.1:19000:9000"
+
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+
+    networks:
+      - chinook-net
+
+volumes:
+  clickhouse_data:
+    external: true
+    name: chinook-clickhouse-data
+
+networks:
+  chinook-net:
+    external: true
