@@ -1,0 +1,28 @@
+services:
+  grafana:
+    image: grafana/grafana:13.3.1
+    container_name: chinook-grafana
+    restart: unless-stopped
+
+    ports:
+      - "127.0.0.1:3000:3000"
+
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Password required}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_PLUGINS_PREINSTALL: grafana-clickhouse-datasource
+
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+    networks:
+      - chinook-net
+
+volumes:
+  grafana_data:
+    name: chinook-grafana-data
+
+networks:
+  chinook-net:
+    external: true

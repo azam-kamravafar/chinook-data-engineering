@@ -1,0 +1,1010 @@
+{
+  "id": null,
+  "uid": "chinook-warehouse-quality-refined-faen",
+  "title": "Chinook | Warehouse Integrity & SCD2 — کیفیت انبار داده و تاریخچه مشتریان",
+  "description": "Warehouse integrity monitoring backed by ChinookDW in ClickHouse. All anomaly checks scan full warehouse history. Only the Fact Rows KPI follows the Grafana date filter. SCD temporal linkage uses calendar-day granularity because FactSales references DimDate via DateKey; it cannot prove within-day timestamp alignment. These are checks for a sample Chinook project, not a production certification.",
+  "schemaVersion": 42,
+  "version": 1,
+  "editable": true,
+  "graphTooltip": 1,
+  "tags": [
+    "chinook",
+    "warehouse",
+    "data-quality",
+    "integrity",
+    "scd2",
+    "fa-en",
+    "refined"
+  ],
+  "timezone": "browser",
+  "time": {
+    "from": "2021-01-01T00:00:00Z",
+    "to": "2026-01-01T00:00:00Z"
+  },
+  "refresh": "",
+  "fiscalYearStartMonth": 0,
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Fact Rows · Period | ردیف‌های فکت · بازه",
+      "description": "Count of FactSales rows with matching DimDate, restricted by selected date range. This is an observational volume metric, not itself a quality pass/fail. | تعداد سطرهای فکت در بازه انتخاب‌شده که تاریخشان در DimDate موجود است.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "ag50ui0it05c0f"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "ag50ui0it05c0f"
+          },
+          "queryType": "table",
+          "editorType": "sql",
+          "rawSql": "SELECT count() AS fact_rows\nFROM ChinookDW.FactSales f\nINNER JOIN ChinookDW.DimDate d ON f.DateKey=d.DateKey\nWHERE $__dateFilter(d.FullDate);",
+          "format": 1,
+          "pluginVersion": "4.23.5"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#43C7E5"
+          },
+          "decimals": 0,
+          "unit": "none",
+          "noValue": "No data"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": false,
+        "textSize": {
+          "title": 11,
+          "value": 40
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "pluginVersion": "13.3.1"
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Duplicate IDs · All | شناسه تکراری · کل",
+      "description": "Excess occurrences of InvoiceLineId across ALL FactSales history (not just the selected period). Expected 0. | تکرار شناسه ردیف فاکتور در کل تاریخچه؛ مقدار مطلوب صفر.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "ag50ui0it05c0f"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "ag50ui0it05c0f"
+          },
+          "queryType": "table",
+          "editorType": "sql",
+          "rawSql": "SELECT count() - uniqExact(InvoiceLineId) AS duplicate_line_rows\nFROM ChinookDW.FactSales;\n",
+          "format": 1,
+          "pluginVersion": "4.23.5"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "unit": "none",
+          "noValue": "No data",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#3BD2AF",
+                "value": null
+              },
+              {
+                "color": "#F47A89",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": false,
+        "textSize": {
+          "title": 11,
+          "value": 40
+        }
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "pluginVersion": "13.3.1"
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Amount Errors · All | مغایرت مبلغ · کل",
+      "description": "FactSales rows whose SalesAmount does not equal rounded Quantity × UnitPrice, checked across ALL history. Expected 0. | اختلاف محاسبه مبلغ فروش در کل تاریخچه؛ صفر مطلوب است.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "ag50ui0it05c0f"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "ag50ui0it05c0f"
+          },
+          "queryType": "table",
+          "editorType": "sql",
+          "rawSql": "SELECT countIf(SalesAmount != round(Quantity * UnitPrice, 2)) AS amount_mismatches\nFROM ChinookDW.FactSales;\n",
+          "format": 1,
+          "pluginVersion": "4.23.5"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "unit": "none",
+          "noValue": "No data",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#3BD2AF",
+                "value": null
+              },
+              {
+                "color": "#F47A89",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": false,
+        "textSize": {
+          "title": 11,
+          "value": 40
+        }
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "pluginVersion": "13.3.1"
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Orphan Keys · All | کلید بی‌مرجع · کل",
+      "description": "FactSales rows with a missing CustomerKey, TrackKey or DateKey in the related dimension. Entire history; expected 0. | کلیدهای خارجی فاقد مرجع در بُعدهای مشتری، آهنگ یا تاریخ.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "ag50ui0it05c0f"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "ag50ui0it05c0f"
+          },
+          "queryType": "table",
+          "editorType": "sql",
+          "rawSql": "SELECT countIf(\n   (f.CustomerKey NOT IN (SELECT CustomerKey FROM ChinookDW.DimCustomer))\n   OR (f.TrackKey NOT IN (SELECT TrackKey FROM ChinookDW.DimTrack))\n   OR (f.DateKey NOT IN (SELECT DateKey FROM ChinookDW.DimDate))\n) AS orphan_fact_rows\nFROM ChinookDW.FactSales f;",
+          "format": 1,
+          "pluginVersion": "4.23.5"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "unit": "none",
+          "noValue": "No data",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#3BD2AF",
+                "value": null
+              },
+              {
+                "color": "#F47A89",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": false,
+        "textSize": {
+          "title": 11,
+          "value": 40
+        }
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "pluginVersion": "13.3.1"
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "SCD Day Conflicts · All | خطای روز SCD · کل",
+      "description": "FactSales rows outside the calendar-day validity range of the linked DimCustomer version across ALL history. Uses FullDate (day) rather than invoice timestamp; cannot verify intraday chronology. | بررسی تطابق روز فروش با بازه نسخه مشتری؛ نه دقت ساعت و دقیقه.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "ag50ui0it05c0f"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "ag50ui0it05c0f"
+          },
+          "queryType": "table",
+          "editorType": "sql",
+          "rawSql": "SELECT countIf(\n    d.FullDate < toDate(c.ValidFrom)\n    OR (c.ValidTo IS NOT NULL AND d.FullDate >= toDate(c.ValidTo))\n) AS invalid_scd_day_links\nFROM ChinookDW.FactSales f\nINNER JOIN ChinookDW.DimDate d ON f.DateKey = d.DateKey\nINNER JOIN ChinookDW.DimCustomer c ON f.CustomerKey = c.CustomerKey;\n",
+          "format": 1,
+          "pluginVersion": "4.23.5"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "unit": "none",
+          "noValue": "No data",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#3BD2AF",
+                "value": null
+              },
+              {
+                "color": "#F47A89",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": false,
+        "textSize": {
+          "title": 11,
+          "value": 40
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 6,
+        "h": 4
+      },
+      "pluginVersion": "13.3.1"
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "SCD Overlaps · All | هم‌پوشانی SCD · کل",
+      "description": "Number of overlapping half-open validity interval pairs for the same source CustomerId. Entire DimCustomer history. Expected 0. | تعداد جفت نسخه‌هایی که بازه اعتبارشان هم‌پوشانی دارد.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "ag50ui0it05c0f"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "ag50ui0it05c0f"
+          },
+          "queryType": "table",
+          "editorType": "sql",
+          "rawSql": "WITH toDateTime64('2100-01-01 00:00:00', 3) AS open_end\nSELECT count() AS overlap_pairs\nFROM ChinookDW.DimCustomer a\nINNER JOIN ChinookDW.DimCustomer b\n ON a.CustomerId=b.CustomerId AND a.CustomerKey < b.CustomerKey\nWHERE a.ValidFrom < ifNull(b.ValidTo, open_end)\n AND b.ValidFrom < ifNull(a.ValidTo, open_end);",
+          "format": 1,
+          "pluginVersion": "4.23.5"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "unit": "none",
+          "noValue": "No data",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#3BD2AF",
+                "value": null
+              },
+              {
+                "color": "#F47A89",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": false,
+        "textSize": {
+          "title": 11,
+          "value": 40
+        }
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 4,
+        "w": 6,
+        "h": 4
+      },
+      "pluginVersion": "13.3.1"
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "Current Flags · All | خطای نسخه جاری · کل",
+      "description": "Source customers having zero or multiple DimCustomer rows with IsCurrent=1. Entire dimension history; expected 0. | مشتریان دارای صفر یا چند نسخه جاری.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "ag50ui0it05c0f"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "ag50ui0it05c0f"
+          },
+          "queryType": "table",
+          "editorType": "sql",
+          "rawSql": "SELECT count() AS customers_with_invalid_current_count\nFROM (\n SELECT CustomerId, countIf(IsCurrent=1) AS active_versions\n FROM ChinookDW.DimCustomer GROUP BY CustomerId\n HAVING active_versions != 1\n);",
+          "format": 1,
+          "pluginVersion": "4.23.5"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "unit": "none",
+          "noValue": "No data",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#3BD2AF",
+                "value": null
+              },
+              {
+                "color": "#F47A89",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": false,
+        "textSize": {
+          "title": 11,
+          "value": 40
+        }
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 4,
+        "w": 6,
+        "h": 4
+      },
+      "pluginVersion": "13.3.1"
+    },
+    {
+      "id": 10,
+      "type": "stat",
+      "title": "Changed Customers · All | مشتریان تغییریافته · کل",
+      "description": "Distinct source CustomerId values with more than one stored SCD Type 2 version. A meaningful activity count, not a DQ error. | تعداد مشتریانی که بیش از یک نسخه تاریخی دارند؛ این شاخص خطا نیست.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "ag50ui0it05c0f"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "ag50ui0it05c0f"
+          },
+          "queryType": "table",
+          "editorType": "sql",
+          "rawSql": "SELECT count() AS changed_customers\nFROM (\n    SELECT CustomerId\n    FROM ChinookDW.DimCustomer\n    GROUP BY CustomerId\n    HAVING count() > 1\n);\n",
+          "format": 1,
+          "pluginVersion": "4.23.5"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#A88BEA"
+          },
+          "decimals": 0,
+          "unit": "none",
+          "noValue": "No data"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": false,
+        "textSize": {
+          "title": 11,
+          "value": 40
+        }
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 4,
+        "w": 6,
+        "h": 4
+      },
+      "pluginVersion": "13.3.1"
+    },
+    {
+      "id": 11,
+      "type": "row",
+      "title": "SCD TYPE 2 HISTORY | تاریخچه تغییرات مشتریان",
+      "collapsed": false,
+      "panels": [],
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "id": 8,
+      "type": "barchart",
+      "title": "Version Distribution | توزیع نسخه‌های مشتری",
+      "description": "How many distinct source customers have each number of SCD Type 2 versions. All DimCustomer history. | تعداد مشتریان به تفکیک شمار نسخه‌ها در کل تاریخچه.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "ag50ui0it05c0f"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "ag50ui0it05c0f"
+          },
+          "queryType": "table",
+          "editorType": "sql",
+          "rawSql": "SELECT concat(toString(versions),' version(s)') AS versions_group,\n       count() AS customers\nFROM (\n  SELECT CustomerId, count() AS versions\n  FROM ChinookDW.DimCustomer GROUP BY CustomerId\n)\nGROUP BY versions\nORDER BY versions;",
+          "format": 1,
+          "pluginVersion": "4.23.5"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#A88BEA"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 90,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "unit": "none",
+          "decimals": 0,
+          "noValue": "No data"
+        },
+        "overrides": []
+      },
+      "options": {
+        "barRadius": 0.1,
+        "barWidth": 0.6,
+        "fullHighlight": false,
+        "groupWidth": 0.72,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "orientation": "horizontal",
+        "showValue": "always",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xField": "versions_group",
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 9,
+        "w": 8,
+        "h": 9
+      },
+      "pluginVersion": "13.3.1"
+    },
+    {
+      "id": 9,
+      "type": "table",
+      "title": "Changed-Customer Versions | نسخه‌های مشتریان تغییریافته",
+      "description": "Only customers with 2+ DimCustomer versions, shown one row per historical version for investigating SCD2 validity boundaries and current flags. All history; no hardcoded CustomerId. | جزئیات واقعی تمام نسخه‌های مشتریانی که تغییر داشته‌اند.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "ag50ui0it05c0f"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "ag50ui0it05c0f"
+          },
+          "queryType": "table",
+          "editorType": "sql",
+          "rawSql": "SELECT\n    CustomerId AS customer_id,\n    CustomerKey AS version_key,\n    if(IsCurrent = 1, 'CURRENT', 'HISTORICAL') AS version_state,\n    ValidFrom AS valid_from,\n    ValidTo AS valid_to,\n    SourceEventId AS source_event_id\nFROM ChinookDW.DimCustomer\nWHERE CustomerId IN (\n    SELECT CustomerId\n    FROM ChinookDW.DimCustomer\n    GROUP BY CustomerId\n    HAVING count() > 1\n)\nORDER BY CustomerId ASC, ValidFrom DESC, CustomerKey DESC\nLIMIT 100;\n",
+          "format": 1,
+          "pluginVersion": "4.23.5"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#68A9FF"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "customer_id"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "version_key"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 125
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "version_state"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 125
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "valid_from"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 220
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "valid_to"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 220
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "source_event_id"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 140
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 9,
+        "w": 16,
+        "h": 9
+      },
+      "pluginVersion": "13.3.1"
+    },
+    {
+      "id": 12,
+      "type": "row",
+      "title": "QUALITY CHECK REGISTER | فهرست کنترل‌های کیفیت",
+      "collapsed": false,
+      "panels": [],
+      "gridPos": {
+        "x": 0,
+        "y": 18,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "id": 13,
+      "type": "table",
+      "title": "Integrity Test Register | وضعیت آزمون‌های یکپارچگی",
+      "description": "Seven explicit warehouse-wide assertions, each with the count of offending rows or pairs. PASS means 0 detected errors for that rule, not proof of end-to-end production reliability. Day-grain SCD rule does not validate within-day time. | ۷ آزمون مشخص در کل تاریخچه؛ صفر بودن موارد شناسایی‌شده به معنی تأیید همه بخش‌های پایپ‌لاین نیست.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "ag50ui0it05c0f"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "ag50ui0it05c0f"
+          },
+          "queryType": "table",
+          "editorType": "sql",
+          "rawSql": "SELECT\n    check_name,\n    issues,\n    if(issues = 0, 'PASS', 'FAIL') AS result,\n    'ALL HISTORY' AS scope\nFROM (\n    SELECT 'Duplicate InvoiceLineId' AS check_name,\n           count() - uniqExact(InvoiceLineId) AS issues\n    FROM ChinookDW.FactSales\n\n    UNION ALL\n    SELECT 'SalesAmount vs Quantity × UnitPrice' AS check_name,\n           countIf(SalesAmount != round(Quantity * UnitPrice, 2)) AS issues\n    FROM ChinookDW.FactSales\n\n    UNION ALL\n    SELECT 'Missing dimension keys' AS check_name,\n           countIf(\n               (CustomerKey NOT IN (SELECT CustomerKey FROM ChinookDW.DimCustomer))\n               OR (TrackKey NOT IN (SELECT TrackKey FROM ChinookDW.DimTrack))\n               OR (DateKey NOT IN (SELECT DateKey FROM ChinookDW.DimDate))\n           ) AS issues\n    FROM ChinookDW.FactSales\n\n    UNION ALL\n    SELECT 'Day-grain SCD validity mismatch' AS check_name,\n           countIf(\n               d.FullDate < toDate(c.ValidFrom)\n               OR (c.ValidTo IS NOT NULL AND d.FullDate >= toDate(c.ValidTo))\n           ) AS issues\n    FROM ChinookDW.FactSales f\n    INNER JOIN ChinookDW.DimDate d ON f.DateKey = d.DateKey\n    INNER JOIN ChinookDW.DimCustomer c ON f.CustomerKey = c.CustomerKey\n\n    UNION ALL\n    SELECT 'Overlapping SCD2 version pairs' AS check_name,\n           count() AS issues\n    FROM ChinookDW.DimCustomer a\n    INNER JOIN ChinookDW.DimCustomer b\n      ON a.CustomerId = b.CustomerId AND a.CustomerKey < b.CustomerKey\n    WHERE a.ValidFrom < ifNull(b.ValidTo, toDateTime64('2100-01-01 00:00:00', 3))\n      AND b.ValidFrom < ifNull(a.ValidTo, toDateTime64('2100-01-01 00:00:00', 3))\n\n    UNION ALL\n    SELECT 'Not exactly one current SCD2 version' AS check_name,\n           count() AS issues\n    FROM (\n        SELECT CustomerId\n        FROM ChinookDW.DimCustomer\n        GROUP BY CustomerId\n        HAVING countIf(IsCurrent = 1) != 1\n    )\n\n    UNION ALL\n    SELECT 'Non-positive SCD2 validity windows' AS check_name,\n           countIf(isNotNull(ValidTo) AND ValidTo <= ValidFrom) AS issues\n    FROM ChinookDW.DimCustomer\n)\nORDER BY result ASC, check_name ASC;\n",
+          "format": 1,
+          "pluginVersion": "4.23.5"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#68A9FF"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "check_name"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 550
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "issues"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "result"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 175
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "PASS": {
+                        "text": "PASS",
+                        "color": "#3BD2AF"
+                      },
+                      "FAIL": {
+                        "text": "FAIL",
+                        "color": "#F47A89"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "scope"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 180
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 19,
+        "w": 24,
+        "h": 8
+      },
+      "pluginVersion": "13.3.1"
+    }
+  ],
+  "links": []
+}

@@ -1,92 +1,33 @@
-# پروژه مهندسی داده Chinook
+# Chinook Data Engineering Pipeline
 
-## معرفی پروژه
+**Tech stack:** SQL Server · Python · Kafka · PostgreSQL · Airflow · Spark · ClickHouse · Grafana · Docker
 
-این پروژه یک نمونه‌کار عملی مهندسی داده (Data Engineering)
-بر پایه پایگاه داده نمونه Chinook است.
+## English
 
-هدف پروژه، طراحی و پیاده‌سازی یک خط لوله داده است که تغییرات
-اطلاعات مشتریان را از SQL Server دریافت کرده و پس از پردازش،
-در انبار داده ClickHouse ذخیره می‌کند.
+A hands-on, end-to-end data engineering project using the Chinook dataset. Customer changes are captured in SQL Server and processed for analytics and monitoring.
 
-## فناوری‌های استفاده‌شده
+**Pipeline:** SQL Server (Trigger + Outbox) → Python Producer → Kafka → Python Consumer → PostgreSQL (staging + ledger) → Airflow / Spark (SCD Type 2) → ClickHouse → Grafana.
 
-| فناوری | کاربرد |
-|---|---|
-| SQL Server | پایگاه داده مبدأ و ثبت تغییرات |
-| Python | تولید و مصرف پیام‌های Kafka |
-| Apache Kafka | انتقال رویدادهای تغییر داده |
-| PostgreSQL | ذخیره موقت رویدادها و ثبت وضعیت پردازش |
-| Apache Spark | پردازش داده و پیاده‌سازی SCD Type 2 |
-| ClickHouse | انبار داده تحلیلی |
-| Apache Airflow | زمان‌بندی و هماهنگ‌سازی مراحل پردازش |
-| Docker | اجرای سرویس‌ها در محیط محلی |
+**Highlights:** Customer change tracking, historical customer versions (SCD Type 2), a sales star schema, and checks for duplicates, broken references, amounts, and SCD history. Initial sales data is loaded separately from the Kafka CDC flow.
 
-## معماری خط لوله داده
+**Dashboards:** Sales Intelligence · Customers & Catalog · Pipeline Operations · Warehouse Quality. JSON exports are in `grafana/dashboards/`.
 
-SQL Server
-    |
-    v
-CDC Outbox
-    |
-    v
-Python Producer
-    |
-    v
-Apache Kafka
-    |
-    v
-Airflow Consumer
-    |
-    v
-PostgreSQL Staging
-    |
-    v
-Apache Spark (SCD Type 2)
-    |
-    v
-ClickHouse Data Warehouse
+**Local setup:** Requires Docker/Compose, Python, and access to SQL Server. Configure private `.env` files, start the services, run the producer, and trigger the `chinook_cdc_to_warehouse` Airflow DAG. See [`docs/SETUP_FA.md`](docs/SETUP_FA.md). Never commit credentials.
 
-## قابلیت‌های پیاده‌سازی‌شده
+**Status:** Core flow and sample events tested. Full automation, clean-install verification, and final recovery tests are pending. **Portfolio project; not production-ready.**
 
-- ثبت تغییرات مشتریان با استفاده از Trigger و Outbox
-- انتشار رویدادها در Kafka
-- دریافت رویدادها و ذخیره در PostgreSQL
-- ثبت وضعیت پردازش رویدادها در Processing Ledger
-- تصمیم‌گیری شرطی در Airflow بر اساس وجود داده جدید
-- نگهداری تاریخچه مشتریان با روش SCD Type 2
-- اعتبارسنجی کیفیت داده‌های انبار داده
-- آزمایش پردازش مجدد و بازیابی پس از خرابی
+---
 
-## نتایج آزمایش عملی
+## فارسی
 
-در آزمایش End-to-End، تغییر اطلاعات یک مشتری
-با موفقیت از SQL Server تا ClickHouse منتقل شد.
+این پروژه یک پایپ‌لاین عملی مهندسی داده با دیتاست Chinook است. تغییرات مشتریان در SQL Server ثبت و پس از انتقال و پردازش، برای تحلیل و مانیتورینگ آماده می‌شوند.
 
-نتایج تأییدشده:
+**مسیر داده:** SQL Server (Trigger + Outbox) → Python → Kafka → PostgreSQL → Airflow / Spark (SCD Type 2) → ClickHouse → Grafana.
 
-- تعداد رویدادهای پردازش‌شده: ۳
-- Kafka Consumer Lag: صفر
-- تعداد نسخه‌های جدول DimCustomer: ۶۴
-- تعداد مشتریان فعلی: ۵۹
-- تعداد رکوردهای FactSales: ۲۲۴۱
-- مجموع فروش: ۲۳۲۹٫۵۹
+**قابلیت‌ها:** ثبت تغییرات مشتری، نگهداری تاریخچه با SCD Type 2، مدل ستاره‌ای فروش و کنترل کیفیت داده (تکراری‌ها، کلیدهای نامعتبر، اختلاف مبلغ و تاریخچه). بارگذاری اولیه فروش جدا از مسیر Kafka انجام شده است.
 
-همچنین هر دو مسیر تصمیم‌گیری Airflow آزمایش شدند:
+**داشبوردها:** تحلیل فروش، مشتریان و محصولات، مانیتورینگ پایپ‌لاین و کیفیت انبار داده. فایل‌ها در `grafana/dashboards/` هستند.
 
-۱. بدون رویداد جدید: عدم اجرای Spark
-۲. با رویداد جدید: اجرای Spark و به‌روزرسانی تاریخچه مشتری
+**راه‌اندازی:** Docker/Compose، Python و دسترسی به SQL Server لازم است. فایل‌های `.env` شخصی را تنظیم کنید، سرویس‌ها و Producer را اجرا کنید و DAG با نام `chinook_cdc_to_warehouse` را در Airflow اجرا کنید. راهنمای فعلی: [`docs/SETUP_FA.md`](docs/SETUP_FA.md). رمزها را وارد Git نکنید.
 
-## محدودیت‌های فعلی
-
-- Producer در ویندوز به‌صورت دستی اجرا می‌شود.
-- راه‌اندازی کامل پروژه هنوز به یک دستور واحد تبدیل نشده است.
-- تضمین Exactly-Once در تمام شرایط خرابی وجود ندارد.
-- مستندات نصب و بازتولید محیط هنوز در حال تکمیل هستند.
-
-## وضعیت پروژه
-
-خط لوله اصلی پیاده‌سازی و در محیط محلی آزمایش شده است.
-
-مراحل بعدی شامل تکمیل مستندات، بررسی امنیت فایل‌ها،
-آماده‌سازی راه‌اندازی مجدد و انتشار در GitHub است.
+**وضعیت:** بخش‌های اصلی و رویدادهای آزمایشی تست شده‌اند؛ خودکارسازی کامل، نصب از صفر و تست نهایی بازیابی هنوز باقی مانده است. **پروژه نمونه‌کار است، نه سرویس آماده Production.**

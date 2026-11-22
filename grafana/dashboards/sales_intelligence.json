@@ -1,0 +1,1024 @@
+{
+  "id": null,
+  "uid": "chinook-sales-intel-refined-faen",
+  "title": "Chinook | Sales Intelligence Refined — تحلیل پیشرفته فروش",
+  "description": "Bilingual revenue and ordering dashboard sourced from ChinookDW; date-filtered historical financial metrics and product mix. Total revenue is invoice-line SalesAmount, invoices are distinct InvoiceId; avoid mistaking unit price for total order value.",
+  "schemaVersion": 42,
+  "version": 1,
+  "editable": true,
+  "graphTooltip": 1,
+  "tags": [
+    "bi",
+    "bilingual",
+    "chinook",
+    "clickhouse",
+    "executive",
+    "refined",
+    "sales"
+  ],
+  "timezone": "browser",
+  "time": {
+    "from": "2024-12-31T20:30:00.000Z",
+    "to": "2025-12-31T20:30:00.000Z"
+  },
+  "refresh": "",
+  "fiscalYearStartMonth": 0,
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Total Revenue | درآمد کل",
+      "description": "Total invoice-line revenue for the selected dates. Sum of FactSales.SalesAmount (USD).",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "ag50ui0it05c0f"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "ag50ui0it05c0f"
+          },
+          "queryType": "table",
+          "editorType": "sql",
+          "rawSql": "\r\nSELECT\r\n    round(sum(f.SalesAmount), 2) AS total_revenue\r\n\r\nFROM ChinookDW.FactSales AS f\r\n\r\nINNER JOIN ChinookDW.DimDate AS d\r\n    ON f.DateKey = d.DateKey\r\n\r\nWHERE $__dateFilter(d.FullDate);\r\n",
+          "format": 1,
+          "pluginVersion": "4.23.5"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#4CC9F0"
+          },
+          "decimals": 2,
+          "unit": "currencyUSD",
+          "noValue": "—"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": false,
+        "textSize": {
+          "title": 12,
+          "value": 43
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "pluginVersion": "13.3.1"
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Total Orders | تعداد سفارش‌ها",
+      "description": "Distinct invoice count for the selected date range (uniqExact InvoiceId).",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "ag50ui0it05c0f"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "ag50ui0it05c0f"
+          },
+          "queryType": "table",
+          "editorType": "sql",
+          "rawSql": "SELECT\r\n    uniqExact(f.InvoiceId) AS total_orders\r\nFROM ChinookDW.FactSales AS f\r\nINNER JOIN ChinookDW.DimDate AS d\r\n    ON f.DateKey = d.DateKey\r\nWHERE $__dateFilter(d.FullDate);",
+          "format": 1,
+          "pluginVersion": "4.23.5"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#A78BFA"
+          },
+          "decimals": 0,
+          "unit": "none",
+          "noValue": "—"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": false,
+        "textSize": {
+          "title": 12,
+          "value": 43
+        }
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "pluginVersion": "13.3.1"
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Average Order Value | میانگین ارزش سفارش",
+      "description": "Average order value = total SalesAmount divided by distinct InvoiceId in the selected range.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "ag50ui0it05c0f"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "ag50ui0it05c0f"
+          },
+          "queryType": "table",
+          "editorType": "sql",
+          "rawSql": "\r\nSELECT\r\n    round(\r\n        sum(f.SalesAmount) /\r\n        nullIf(uniqExact(f.InvoiceId), 0),\r\n        2\r\n    ) AS average_order_value\r\n\r\nFROM ChinookDW.FactSales AS f\r\n\r\nINNER JOIN ChinookDW.DimDate AS d\r\n    ON f.DateKey = d.DateKey\r\n\r\nWHERE $__dateFilter(d.FullDate);\r\n",
+          "format": 1,
+          "pluginVersion": "4.23.5"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#2DD4BF"
+          },
+          "decimals": 2,
+          "unit": "currencyUSD",
+          "noValue": "—"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": false,
+        "textSize": {
+          "title": 12,
+          "value": 43
+        }
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "pluginVersion": "13.3.1"
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "Unique Customers | مشتریان یکتا",
+      "description": "Distinct source CustomerId values with purchases in range; counts multiple SCD Type 2 versions as one customer.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "ag50ui0it05c0f"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "ag50ui0it05c0f"
+          },
+          "queryType": "table",
+          "editorType": "sql",
+          "rawSql": "\r\nSELECT\r\n    uniqExact(c.CustomerId) AS unique_customers\r\n\r\nFROM ChinookDW.FactSales AS f\r\n\r\nINNER JOIN ChinookDW.DimCustomer AS c\r\n    ON f.CustomerKey = c.CustomerKey\r\n\r\nINNER JOIN ChinookDW.DimDate AS d\r\n    ON f.DateKey = d.DateKey\r\n\r\nWHERE $__dateFilter(d.FullDate);\r\n",
+          "format": 1,
+          "pluginVersion": "4.23.5"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#60A5FA"
+          },
+          "decimals": 0,
+          "unit": "none",
+          "noValue": "—"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": false,
+        "textSize": {
+          "title": 12,
+          "value": 43
+        }
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "pluginVersion": "13.3.1"
+    },
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Monthly Revenue Trend | روند ماهانه درآمد",
+      "description": "Monthly summed FactSales.SalesAmount (USD). Chart uses month-start timestamps and zero-origin y-axis; a partial-month selection can include partial data.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "ag50ui0it05c0f"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "ag50ui0it05c0f"
+          },
+          "queryType": "timeseries",
+          "editorType": "sql",
+          "rawSql": "\r\nSELECT\r\n    toDateTime(toStartOfMonth(d.FullDate)) AS time,\r\n    round(sum(f.SalesAmount), 2) AS revenue\r\n\r\nFROM ChinookDW.FactSales AS f\r\n\r\nINNER JOIN ChinookDW.DimDate AS d\r\n    ON f.DateKey = d.DateKey\r\n\r\nWHERE $__dateFilter(d.FullDate)\r\n\r\nGROUP BY time\r\n\r\nORDER BY time;\r\n",
+          "format": 0,
+          "pluginVersion": "4.23.5"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#4CC9F0"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 9,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 4,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "always",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "unit": "currencyUSD",
+          "decimals": 2,
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 14,
+        "h": 10
+      },
+      "pluginVersion": "13.3.1"
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Monthly Orders Trend | روند ماهانه سفارش‌ها",
+      "description": "Distinct InvoiceId grouped by invoice month, filtered by selected dashboard dates. Zero-based count axis; no negative orders.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "ag50ui0it05c0f"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "ag50ui0it05c0f"
+          },
+          "queryType": "timeseries",
+          "editorType": "sql",
+          "rawSql": "\r\nSELECT\r\n    toDateTime(toStartOfMonth(d.FullDate)) AS time,\r\n    uniqExact(f.InvoiceId) AS total_orders\r\n\r\nFROM ChinookDW.FactSales AS f\r\n\r\nINNER JOIN ChinookDW.DimDate AS d\r\n    ON f.DateKey = d.DateKey\r\n\r\nWHERE $__dateFilter(d.FullDate)\r\n\r\nGROUP BY time\r\n\r\nORDER BY time;\r\n",
+          "format": 0,
+          "pluginVersion": "4.23.5"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#A78BFA"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.55,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 0,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 0,
+          "unit": "none",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "gridPos": {
+        "x": 14,
+        "y": 4,
+        "w": 10,
+        "h": 10
+      },
+      "pluginVersion": "13.3.1"
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Monthly Average Order Value | میانگین ماهانه ارزش سفارش",
+      "description": "Monthly SalesAmount / unique InvoiceId, in USD per order, with a zero-based axis. Not the average invoice-line price.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "ag50ui0it05c0f"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "ag50ui0it05c0f"
+          },
+          "queryType": "timeseries",
+          "editorType": "sql",
+          "rawSql": "SELECT\n    toDateTime(toStartOfMonth(d.FullDate)) AS time,\n    round(sum(f.SalesAmount) / nullIf(uniqExact(f.InvoiceId), 0), 2) AS aov\nFROM ChinookDW.FactSales AS f\nINNER JOIN ChinookDW.DimDate AS d ON f.DateKey = d.DateKey\nWHERE $__dateFilter(d.FullDate)\nGROUP BY time\nORDER BY time;",
+          "format": 0,
+          "pluginVersion": "4.23.5"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#40D5AD"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 9,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 4,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "always",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "unit": "currencyUSD",
+          "decimals": 2,
+          "noValue": "No data",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 14,
+        "w": 10,
+        "h": 9
+      },
+      "pluginVersion": "13.3.1"
+    },
+    {
+      "id": 3,
+      "type": "barchart",
+      "title": "Top Artists & Shows | هنرمندان و مجموعه‌های پردرآمد",
+      "description": "Top 10 DimTrack.ArtistName groups by FactSales revenue. Source artist labels may contain television show or series names; revenue is filtered to selected dates.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "ag50ui0it05c0f"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "ag50ui0it05c0f"
+          },
+          "queryType": "table",
+          "editorType": "sql",
+          "rawSql": "\r\nSELECT\r\n    ifNull(\r\n        nullIf(t.ArtistName, ''),\r\n        'Unknown Artist'\r\n    ) AS artist,\r\n\r\n    round(sum(f.SalesAmount), 2) AS revenue\r\n\r\nFROM ChinookDW.FactSales AS f\r\n\r\nINNER JOIN ChinookDW.DimTrack AS t\r\n    ON f.TrackKey = t.TrackKey\r\n\r\nINNER JOIN ChinookDW.DimDate AS d\r\n    ON f.DateKey = d.DateKey\r\n\r\nWHERE $__dateFilter(d.FullDate)\r\n\r\nGROUP BY artist\r\n\r\nORDER BY revenue DESC\r\n\r\nLIMIT 10;\r\n",
+          "format": 1,
+          "pluginVersion": "4.23.5"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#2DD4BF"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 90,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "unit": "currencyUSD",
+          "decimals": 2,
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "barRadius": 0.08,
+        "barWidth": 0.75,
+        "fullHighlight": false,
+        "groupWidth": 0.72,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "orientation": "horizontal",
+        "showValue": "always",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xField": "artist",
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "gridPos": {
+        "x": 10,
+        "y": 14,
+        "w": 14,
+        "h": 9
+      },
+      "pluginVersion": "13.3.1"
+    },
+    {
+      "id": 8,
+      "type": "barchart",
+      "title": "Top Genres & Categories | ژانرها و دسته‌بندی‌های پردرآمد",
+      "description": "Top 8 DimTrack.GenreName categories, which include music genres as well as TV/video categories. Sum of FactSales.SalesAmount (USD), filtered by invoice date.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "ag50ui0it05c0f"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "ag50ui0it05c0f"
+          },
+          "queryType": "table",
+          "editorType": "sql",
+          "rawSql": "SELECT\n    ifNull(nullIf(t.GenreName, ''), 'Unknown genre') AS genre,\n    round(sum(f.SalesAmount), 2) AS revenue\nFROM ChinookDW.FactSales AS f\nINNER JOIN ChinookDW.DimTrack AS t ON f.TrackKey = t.TrackKey\nINNER JOIN ChinookDW.DimDate AS d ON f.DateKey = d.DateKey\nWHERE $__dateFilter(d.FullDate)\nGROUP BY genre\nORDER BY revenue DESC\nLIMIT 8;",
+          "format": 1,
+          "pluginVersion": "4.23.5"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#A78BFA"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 88,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "unit": "currencyUSD",
+          "decimals": 2,
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "barRadius": 0.08,
+        "barWidth": 0.72,
+        "fullHighlight": false,
+        "groupWidth": 0.72,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "orientation": "horizontal",
+        "showValue": "always",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xField": "genre",
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 23,
+        "w": 12,
+        "h": 10
+      },
+      "pluginVersion": "13.3.1"
+    },
+    {
+      "id": 9,
+      "type": "barchart",
+      "title": "Sales by Customer Country | فروش به تفکیک کشور مشتری",
+      "description": "Top 8 purchasing countries by revenue, attributed through the fact-linked historical DimCustomer version.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "ag50ui0it05c0f"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "ag50ui0it05c0f"
+          },
+          "queryType": "table",
+          "editorType": "sql",
+          "rawSql": "SELECT\n    ifNull(nullIf(c.Country, ''), 'Unknown country') AS country,\n    round(sum(f.SalesAmount), 2) AS revenue\nFROM ChinookDW.FactSales AS f\nINNER JOIN ChinookDW.DimCustomer AS c ON f.CustomerKey = c.CustomerKey\nINNER JOIN ChinookDW.DimDate AS d ON f.DateKey = d.DateKey\nWHERE $__dateFilter(d.FullDate)\nGROUP BY country\nORDER BY revenue DESC\nLIMIT 8;",
+          "format": 1,
+          "pluginVersion": "4.23.5"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#60A5FA"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 88,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "unit": "currencyUSD",
+          "decimals": 2,
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "barRadius": 0.08,
+        "barWidth": 0.72,
+        "fullHighlight": false,
+        "groupWidth": 0.72,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "orientation": "horizontal",
+        "showValue": "always",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xField": "country",
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 23,
+        "w": 12,
+        "h": 10
+      },
+      "pluginVersion": "13.3.1"
+    },
+    {
+      "id": 11,
+      "type": "barchart",
+      "title": "Order Size Distribution | توزیع تعداد اقلام هر سفارش",
+      "description": "Invoices grouped into basket-size bands based on SUM(FactSales.Quantity) per distinct InvoiceId for the selected dates. Each invoice is counted exactly once; bands are 1–2, 3–4, 5–7 and 8+ units.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "ag50ui0it05c0f"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "ag50ui0it05c0f"
+          },
+          "queryType": "table",
+          "editorType": "sql",
+          "rawSql": "SELECT\n    multiIf(\n        items_per_order <= 2, '01 · 1–2 items',\n        items_per_order <= 4, '02 · 3–4 items',\n        items_per_order <= 7, '03 · 5–7 items',\n        '04 · 8+ items'\n    ) AS basket_size,\n    count() AS orders\nFROM\n(\n    SELECT\n        f.InvoiceId,\n        sum(f.Quantity) AS items_per_order\n    FROM ChinookDW.FactSales AS f\n    INNER JOIN ChinookDW.DimDate AS d\n        ON f.DateKey = d.DateKey\n    WHERE $__dateFilter(d.FullDate)\n    GROUP BY f.InvoiceId\n)\nGROUP BY basket_size\nORDER BY basket_size;",
+          "format": 1,
+          "pluginVersion": "4.23.5"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#F2B96B"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 90,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "unit": "none",
+          "decimals": 0,
+          "noValue": "No data",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "barRadius": 0.08,
+        "barWidth": 0.68,
+        "fullHighlight": false,
+        "groupWidth": 0.72,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "orientation": "horizontal",
+        "showValue": "always",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xField": "basket_size",
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 33,
+        "w": 12,
+        "h": 10
+      },
+      "pluginVersion": "13.3.1"
+    },
+    {
+      "id": 12,
+      "type": "barchart",
+      "title": "Revenue by Unit Price | درآمد به تفکیک قیمت واحد",
+      "description": "Revenue mix at the invoice-line unit price level. The bars aggregate SalesAmount by FactSales.UnitPrice, not by total invoice value. Filtered by selected dates.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "ag50ui0it05c0f"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "ag50ui0it05c0f"
+          },
+          "queryType": "table",
+          "editorType": "sql",
+          "rawSql": "SELECT\n    concat('$', toString(f.UnitPrice)) AS price_per_unit,\n    round(sum(f.SalesAmount), 2) AS revenue\nFROM ChinookDW.FactSales AS f\nINNER JOIN ChinookDW.DimDate AS d\n    ON f.DateKey = d.DateKey\nWHERE $__dateFilter(d.FullDate)\nGROUP BY f.UnitPrice\nORDER BY f.UnitPrice;",
+          "format": 1,
+          "pluginVersion": "4.23.5"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#60A5FA"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 90,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "unit": "currencyUSD",
+          "decimals": 2,
+          "noValue": "No data",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "barRadius": 0.08,
+        "barWidth": 0.65,
+        "fullHighlight": false,
+        "groupWidth": 0.72,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "orientation": "horizontal",
+        "showValue": "always",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xField": "price_per_unit",
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 33,
+        "w": 12,
+        "h": 10
+      },
+      "pluginVersion": "13.3.1"
+    }
+  ],
+  "links": []
+}
