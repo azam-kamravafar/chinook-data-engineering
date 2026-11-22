@@ -1,67 +1,63 @@
 # Chinook Data Engineering Pipeline
 
-**Tech stack:** SQL Server · Python · Kafka · PostgreSQL · Airflow · Spark · ClickHouse · Grafana · Docker
+**Tools:** SQL Server · Python · Kafka · PostgreSQL · Airflow · Spark · ClickHouse · Grafana · Docker
 
 ## English
 
-A hands-on, end-to-end data engineering project using the Chinook dataset. Customer changes are captured in SQL Server and processed for analytics and monitoring.
+I worked on this project using the Chinook sample database to practice handling changes to customer records in a data warehouse. The main part is a small pipeline that takes customer updates from SQL Server and keeps previous versions instead of replacing them. I also added sales reports and dashboards to check the results and follow the processing steps.
 
-**Pipeline:** SQL Server (Trigger + Outbox) → Python Producer → Kafka → Python Consumer → PostgreSQL (staging + ledger) → Airflow / Spark (SCD Type 2) → ClickHouse → Grafana.
+**How the data moves:** A trigger records customer updates in `dbo.ChangeOutbox` in SQL Server. A Python producer sends those events to Kafka, and a consumer writes them to PostgreSQL staging. Airflow runs the processing steps, including a Spark job that updates `DimCustomer` in ClickHouse using SCD Type 2. Grafana reads the warehouse and monitoring data to display the results.
 
-**Highlights:** Customer change tracking, historical customer versions (SCD Type 2), a sales star schema, and checks for duplicates, broken references, amounts, and SCD history. Initial sales data is loaded separately from the Kafka CDC flow.
+The Kafka flow handles **customer changes**. The original sales data was loaded separately into the warehouse.
 
-**Dashboards:** Sales Intelligence · Customers & Catalog · Pipeline Operations · Warehouse Quality. JSON exports are in `grafana/dashboards/`.
+**What I tested:** After working through several updates for `CustomerId = 5`, `DimCustomer` contains six versions of that customer: five historical records and one current record. The processing ledger shows three applied change events. The sales fact table contains 2,241 invoice-line rows. These are local test results using the Chinook dataset.
 
-**Local setup:** Requires Docker/Compose, Python, and access to SQL Server. Configure private `.env` files, start the services, run the producer, and trigger the `chinook_cdc_to_warehouse` Airflow DAG. See [`docs/SETUP_FA.md`](docs/SETUP_FA.md). Never commit credentials.
+**Running it locally:** I used Windows with WSL2 Ubuntu and Docker Compose, with SQL Server running on Windows. The setup notes are in [docs/SETUP_FA.md](docs/SETUP_FA.md), and the Grafana dashboard JSON files are in [grafana/dashboards](grafana/dashboards/).
 
-**Status:** Core flow and sample events tested. Full automation, clean-install verification, and final recovery tests are pending. **Portfolio project; not production-ready.**
+**Current limitations:** The producer publishes one pending event per run, and the main Airflow DAG is triggered manually. I have not finished a clean installation test or the full failure-and-recovery scenarios. This repository is a learning and portfolio project, not a production deployment.
 
 ---
 
 ## فارسی
 
-این پروژه یک پایپ‌لاین عملی مهندسی داده با دیتاست Chinook است. تغییرات مشتریان در SQL Server ثبت و پس از انتقال و پردازش، برای تحلیل و مانیتورینگ آماده می‌شوند.
+این پروژه را با دیتاست نمونه Chinook کار کردم تا انتقال تغییرات اطلاعات مشتریان به انبار داده را تمرین کنم. بخش اصلی پروژه یک پایپ‌لاین است که تغییرات مشتری را از SQL Server می‌گیرد و به‌جای جایگزین‌کردن اطلاعات قبلی، نسخه‌های مختلف آن را نگه می‌دارد. در ادامه، گزارش‌های فروش و داشبوردهایی هم اضافه کردم تا هم خروجی داده‌ها را ببینم و هم وضعیت پردازش را بررسی کنم.
 
-**مسیر داده:** SQL Server (Trigger + Outbox) → Python → Kafka → PostgreSQL → Airflow / Spark (SCD Type 2) → ClickHouse → Grafana.
+**مسیر داده:** تغییرات مشتری با Trigger در جدول `dbo.ChangeOutbox` در SQL Server ثبت می‌شوند. Producer پایتون آن‌ها را به Kafka می‌فرستد و Consumer رویدادها را در PostgreSQL ذخیره می‌کند. Airflow مراحل پردازش را اجرا می‌کند و Spark با روش SCD Type 2 تغییرات را روی `DimCustomer` در ClickHouse اعمال می‌کند. Grafana هم برای نمایش گزارش‌ها و وضعیت پایپ‌لاین استفاده شده است.
 
-**قابلیت‌ها:** ثبت تغییرات مشتری، نگهداری تاریخچه با SCD Type 2، مدل ستاره‌ای فروش و کنترل کیفیت داده (تکراری‌ها، کلیدهای نامعتبر، اختلاف مبلغ و تاریخچه). بارگذاری اولیه فروش جدا از مسیر Kafka انجام شده است.
+مسیر Kafka فقط برای **تغییرات مشتریان** است و داده‌های اولیه فروش جداگانه به انبار داده منتقل شده‌اند.
 
-**داشبوردها:** تحلیل فروش، مشتریان و محصولات، مانیتورینگ پایپ‌لاین و کیفیت انبار داده. فایل‌ها در `grafana/dashboards/` هستند.
+**نتیجه آزمایش‌ها:** برای مشتری شماره `5` چند تغییر را بررسی کردم. در پایان، شش نسخه از این مشتری در `DimCustomer` وجود دارد؛ پنج نسخه تاریخی و یک نسخه فعلی. در جدول وضعیت پردازش هم سه رویداد با وضعیت `APPLIED` ثبت شده و جدول فروش `FactSales` شامل ۲۲۴۱ ردیف است. این اعداد نتیجه آزمایش روی داده‌های Chinook هستند.
 
-**راه‌اندازی:** Docker/Compose، Python و دسترسی به SQL Server لازم است. فایل‌های `.env` شخصی را تنظیم کنید، سرویس‌ها و Producer را اجرا کنید و DAG با نام `chinook_cdc_to_warehouse` را در Airflow اجرا کنید. راهنمای فعلی: [`docs/SETUP_FA.md`](docs/SETUP_FA.md). رمزها را وارد Git نکنید.
+**اجرای پروژه:** محیط کار من Windows و WSL2 Ubuntu بوده و سرویس‌ها را با Docker Compose اجرا کردم؛ SQL Server روی Windows قرار دارد. توضیحات راه‌اندازی در [docs/SETUP_FA.md](docs/SETUP_FA.md) و فایل‌های داشبورد در [grafana/dashboards](grafana/dashboards/) هستند.
 
-**وضعیت:** بخش‌های اصلی و رویدادهای آزمایشی تست شده‌اند؛ خودکارسازی کامل، نصب از صفر و تست نهایی بازیابی هنوز باقی مانده است. **پروژه نمونه‌کار است، نه سرویس آماده Production.**
+**وضعیت فعلی:** Producer در هر اجرا یک رویداد در انتظار را ارسال می‌کند و DAG اصلی Airflow دستی اجرا می‌شود. تست نصب کامل از صفر و سناریوهای نهایی خطا و بازیابی هنوز باقی مانده‌اند. این مخزن یک پروژه عملی و نمونه‌کار است، نه سرویس آماده استفاده در محیط عملیاتی.
 
-<!-- chinook-visuals -->
+---
 
 ## Architecture | معماری پروژه
 
-The pipeline processes customer changes through Kafka, PostgreSQL, and Spark, then maintains customer history in ClickHouse using SCD Type 2. Airflow orchestrates the processing steps, and Grafana provides analytics and monitoring.
+Customer updates move through the pipeline into versioned warehouse records. Airflow coordinates processing; Grafana provides reporting and monitoring.
 
-مسیر تغییرات مشتریان از SQL Server شروع می‌شود و با استفاده از Kafka، PostgreSQL و Spark به ClickHouse می‌رسد. تاریخچه مشتریان با SCD Type 2 نگهداری می‌شود و Grafana برای تحلیل و مانیتورینگ استفاده شده است.
+تغییرات مشتریان در پایپ‌لاین پردازش می‌شوند و در انبار داده همراه با تاریخچه‌شان نگهداری می‌شوند. Airflow اجرای مراحل را مدیریت می‌کند و Grafana خروجی‌ها را نشان می‌دهد.
 
 ![Chinook Data Engineering Architecture](docs/images/architecture.png)
 
 ## Dashboards | داشبوردها
 
-Four Grafana dashboards were created to explore sales data and monitor the pipeline and warehouse.
+Four dashboards cover sales, customers and catalog, event processing, and warehouse checks.
 
-چهار داشبورد برای تحلیل فروش، بررسی مشتریان، مانیتورینگ پردازش‌ها و کنترل کیفیت داده طراحی شده‌اند.
+چهار داشبورد برای تحلیل فروش، مشتریان و کاتالوگ، وضعیت پردازش رویدادها و کنترل‌های انبار داده آماده شده‌اند.
 
 ### Sales Intelligence | تحلیل فروش
 
-Revenue, orders, customer activity, and sales trends.
-
-درآمد، سفارش‌ها، مشتریان و روند فروش.
+Sales KPIs and trends across the Chinook dataset. / شاخص‌ها و روندهای فروش در دیتاست Chinook.
 
 ![Sales Intelligence Dashboard](docs/images/sales_dashboard.png)
 
 <details>
 <summary><b>Customers & Catalog | تحلیل مشتریان و کاتالوگ</b></summary>
 
-Customer activity, buying patterns, and catalog performance.
-
-تحلیل رفتار خرید مشتریان و عملکرد محصولات.
+Customer activity, buying patterns, and catalog results. / رفتار خرید مشتریان و عملکرد کاتالوگ.
 
 ![Customers and Catalog Dashboard](docs/images/customers_catalog.png)
 
@@ -70,9 +66,7 @@ Customer activity, buying patterns, and catalog performance.
 <details>
 <summary><b>Pipeline Health & Operations | مانیتورینگ پایپ‌لاین</b></summary>
 
-Event-processing status, execution duration, and operational monitoring.
-
-وضعیت رویدادها، زمان پردازش و بررسی عملکرد پایپ‌لاین.
+Processed events, duration, and investigation queue. / وضعیت رویدادها، زمان پردازش و موارد نیازمند بررسی.
 
 ![Pipeline Operations Dashboard](docs/images/pipeline_operations.png)
 
@@ -81,9 +75,7 @@ Event-processing status, execution duration, and operational monitoring.
 <details>
 <summary><b>Warehouse Integrity & SCD2 | کیفیت انبار داده</b></summary>
 
-Data integrity checks and customer history maintained with SCD Type 2.
-
-کنترل کیفیت داده و بررسی تاریخچه تغییرات مشتریان.
+Data integrity checks and customer version history. / کنترل کیفیت داده و تاریخچه نسخه‌های مشتریان.
 
 ![Warehouse Quality Dashboard](docs/images/warehouse_quality.png)
 
