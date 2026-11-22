@@ -54,29 +54,22 @@ Sales KPIs and trends across the Chinook dataset. / شاخص‌ها و روند�
 
 ![Sales Intelligence Dashboard](docs/images/sales_dashboard.png)
 
-<details>
-<summary><b>Customers & Catalog | تحلیل مشتریان و کاتالوگ</b></summary>
+### Customers & Catalog | تحلیل مشتریان و کاتالوگ
 
 Customer activity, buying patterns, and catalog results. / رفتار خرید مشتریان و عملکرد کاتالوگ.
 
 ![Customers and Catalog Dashboard](docs/images/customers_catalog.png)
 
-</details>
 
-<details>
-<summary><b>Pipeline Health & Operations | مانیتورینگ پایپ‌لاین</b></summary>
+### Pipeline Health & Operations | مانیتورینگ پایپ‌لاین
 
 Processed events, duration, and investigation queue. / وضعیت رویدادها، زمان پردازش و موارد نیازمند بررسی.
 
 ![Pipeline Operations Dashboard](docs/images/pipeline_operations.png)
 
-</details>
 
-<details>
-<summary><b>Warehouse Integrity & SCD2 | کیفیت انبار داده</b></summary>
+### Warehouse Integrity & SCD2 | کیفیت انبار داده
 
 Data integrity checks and customer version history. / کنترل کیفیت داده و تاریخچه نسخه‌های مشتریان.
 
 ![Warehouse Quality Dashboard](docs/images/warehouse_quality.png)
-
-</details>
